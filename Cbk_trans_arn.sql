@@ -1,3 +1,4 @@
+
 SELECT  t1.number_world AS NW,     
         coalesce(t2.number, t1.number) AS N, /*coalesce смотрим, если в таблице t2 поле NUMBER не заполнено, то заполняем его из таблицы t1*/
         coalesce(fn.func.function_name(t2.info,'provider_number'), (select dbo.provider_numbe from dbo.provider as p where fn.func.function_name(t2.info,'provider_id')=p.id)) AS PN,
