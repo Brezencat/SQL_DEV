@@ -1,0 +1,2 @@
+IF OBJECT_ID (N'dbo.RUN') is not null drop table RUNCREATE TABLE RUN ( ID int IDENTITY, NAME varchar(20), STAGE tinyint, TIME time);insert into RUN (NAME,STAGE,TIME)VALUES('run1', 1,'00:10:44'),('run1', 2,'00:08:00'),('run1', 3,'00:09:00'),('run2', 1,'00:11:00'),('run2', 2,'00:09:44'),('run2', 3,'00:08:33'),('run3', 1,'00:07:00'),('run3', 2,'00:10:30'),('run3', 3,'00:09:15'),('run4', 1,'00:10:15'),('run4', 2,'00:11:33'),('run4', 3,'00:08:15'),('run5', 1,'00:07:15'),('run5', 2,'00:09:33'),('run5', 3,'00:10:00')
+;
