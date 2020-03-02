@@ -3,16 +3,19 @@ USE master
 GO
 
 DROP DATABASE IF EXISTS TEST_EXISTS_NOT_EXISTS;
+GO
 
 CREATE DATABASE TEST_EXISTS_NOT_EXISTS;
+GO
 
 USE TEST_EXISTS_NOT_EXISTS
 GO
 
+
 SELECT [object_id]
 	 , [name]
 into ONE
-FROM TSQL2012.sys.all_objects
+FROM AdventureWorks2017.sys.all_objects
 ;
 
 SELECT [object_id]
@@ -49,7 +52,11 @@ inner join TWO as t on o.[object_id]=t.[object_id]
 ;
 
 
+set statistics io, time off;
 
---DROP TABLE ONE;
---DROP TABLE TWO;
---DROP DATABASE TEST_EXISTS_NOT_EXISTS;
+DROP TABLE IF EXISTS ONE;
+DROP TABLE IF EXISTS TWO;
+
+USE master
+GO
+DROP DATABASE TEST_EXISTS_NOT_EXISTS;
