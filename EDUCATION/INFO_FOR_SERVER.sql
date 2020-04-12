@@ -56,6 +56,8 @@ SELECT TOP (5)
 FROM sys.dm_exec_query_stats
 ORDER BY (total_logical_reads + total_logical_writes) DESC;
 
+--очистка кэша планов запросов
+DBCC FREEPROCCACHE;
 
 --=====================
 --Индексы. Начало
@@ -135,6 +137,15 @@ select * from sys.databases
 
 --Статистика. Начало
 --==============================
+
+--посмотреть, какая статистика есть по таблице
+SELECT  OBJECT_NAME(object_id) AS table_name,
+		name AS statistics_name, 
+		auto_created,
+		STATS_DATE(object_id, stats_id) as UPDATE_DATE --дата обновления статистики
+FROM sys.stats
+WHERE object_id = OBJECT_ID(N'Sales.Orders', N'U');
+
 
 --курсор удаляет автоматическую статистику, которая не на ключе индекса
 DECLARE @stat_name nvarchar(128),
