@@ -1,4 +1,3 @@
-
 ;
 WITH XML_DATA AS 
 (
@@ -6,6 +5,8 @@ WITH XML_DATA AS
     FROM sys.fn_xe_file_target_read_file (
         'C:\Users\MSSQLSERVER\Documents\HUNT_KILL_0_132297016577870000.xel'
         , null, null, null)
+	WHERE object_name = 'sql_batch_starting' --эту часть надо будет обсуждать, на тесте выбираю только пакеты, стейтменты только для массовки
+		and timestamp_utc like '2020-04-17%'
 ),
 EE_DATA AS
 (
@@ -30,8 +31,6 @@ SELECT --DISTINCT
     ID_SESSION,
     [USERNAME]
 FROM EE_DATA 
-WHERE [DATETIME] > '2020-04-16'-- 08:59:42.4010000
---GROUP BY [host], app_name, username, [object_name]
 ;
 
 --collect_system_time не нужно, потому что в эвенте есть timestamp
