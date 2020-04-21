@@ -1,4 +1,5 @@
 CREATE EVENT SESSION [DEADLOCK_MONITOR] ON SERVER 
+--https://docs.microsoft.com/ru-ru/sql/relational-databases/event-classes/lock-deadlock-event-class?view=sql-server-2017
 ADD EVENT sqlserver.lock_deadlock -- событие lock_deadlock отслеживает возникновение взаимоблокировок и объекты, которые в них участвуют
 	(
     ACTION ( sqlserver.client_app_name
@@ -11,6 +12,7 @@ ADD EVENT sqlserver.lock_deadlock -- событие lock_deadlock отслежи
 			,sqlserver.username
 		   )
 	),
+--https://docs.microsoft.com/ru-ru/sql/relational-databases/event-classes/lock-deadlock-chain-event-class?view=sql-server-2017
 ADD EVENT sqlserver.lock_deadlock_chain -- событие lock_deadlock_chain регистрирует условие возникновения взаимоблокировок
 
 	(
