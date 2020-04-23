@@ -9,9 +9,11 @@ ADD EVENT sqlserver.login
 			 ,sqlserver.username
 		    )
      WHERE ([sqlserver].[not_equal_i_sql_unicode_string]([sqlserver].[username],N'NT SERVICE\SQLSERVERAGENT') 
-			AND [sqlserver].[not_equal_i_sql_unicode_string]([sqlserver].[username],N'NT Service\SSISScaleOutMaster140') 
-			AND [sqlserver].[not_equal_i_sql_unicode_string]([sqlserver].[username],N'NT SERVICE\SQLTELEMETRY') 
-			AND [sqlserver].[not_equal_i_sql_unicode_string]([sqlserver].[client_app_name],N'Среда Microsoft SQL Server Management Studio - IntelliSense для языка Transact-SQL')
+		AND [sqlserver].[not_equal_i_sql_unicode_string]([sqlserver].[username],N'NT Service\SSISScaleOutMaster140') 
+		AND [sqlserver].[not_equal_i_sql_unicode_string]([sqlserver].[username],N'NT SERVICE\SQLTELEMETRY') 
+		AND [sqlserver].[not_equal_i_sql_unicode_string]([sqlserver].[client_app_name],N'.Net SqlClient Data Provider') 
+		AND NOT [sqlserver].[like_i_sql_unicode_string]([sqlserver].[client_app_name],N'%Microsoft SQL Server Management Studio%') 
+		AND NOT [sqlserver].[like_i_sql_unicode_string]([sqlserver].[client_app_name],N'%Service Broker%')
 		   )
 	)
 ADD TARGET package0.event_file (SET 
