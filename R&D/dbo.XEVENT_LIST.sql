@@ -2,7 +2,7 @@ CREATE TABLE dbo.XEVENT_LIST
     ( ID            tinyint IDENTITY(1,1)	NOT NULL
      ,XEVENT_NAME   varchar(255)			NOT NULL
      ,FILE_PATH	    varchar(255)			NULL
-	 ,LAST_DATE		datetime2				NULL
+	 ,LAST_DATE		datetime				NULL
      ,IS_ACTIVE	    bit						NULL
     )
 ;
