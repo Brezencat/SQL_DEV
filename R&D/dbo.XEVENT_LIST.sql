@@ -1,6 +1,6 @@
 CREATE TABLE dbo.XEVENT_LIST
     ( ID            tinyint IDENTITY(1,1)	NOT NULL
-     ,EVENT_NAME    varchar(255)			NOT NULL
+     ,XEVENT_NAME   varchar(255)			NOT NULL
      ,FILE_PATH	    varchar(255)			NULL
 	 ,LAST_DATE		datetime2				NULL
      ,IS_ACTIVE	    bit						NULL
@@ -21,7 +21,7 @@ exec sp_addextendedproperty
     @value = 'Название эвента в системе',  
     @level0type = N'SCHEMA', @level0name = 'dbo',  
     @level1type = N'TABLE',  @level1name = 'XEVENT_LIST',  
-    @level2type = N'COLUMN', @level2name = 'EVENT_NAME';  
+    @level2type = N'COLUMN', @level2name = 'XEVENT_NAME';  
 GO 
 
 exec sp_addextendedproperty 
@@ -59,5 +59,5 @@ GO
 -- VALUES
 -- 	('DEADLOCK_MONITOR', 'DEADLOCK_MONITOR*.xel', 1),
 -- 	('LOGIN_APP_CONNECT', 'LOGIN_APP_CONNECT*.xel', 1),
--- 	('QUERY_IO', 'QUERY_IO*.xel', 1),
--- 	('QUERY_CPU', 'QUERY_CPU*.xel', 1)
+-- 	--('QUERY_IO', 'QUERY_IO*.xel', 1),
+-- 	--('QUERY_CPU', 'QUERY_CPU*.xel', 1)
