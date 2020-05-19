@@ -55,7 +55,7 @@ BEGIN TRY
 		 ,database_id_query		tinyint			null --в каких базах эти сессии для lock_deadlock_chain
 		 ,deadlock_id			int				null --нужен для группировки событий
 		 ,transaction_id_query	int				null
-		 ,resource_type			varchar(10)		null --какой тип блокировки наложен
+		 ,resource_type			varchar(10)		null --!какой тип блокировки наложен
 		-- ,DEADLOCK_GRAF			varchar(MAX)	null
 		 ,[VALUE] 		XML 			NULL --разные параметры
 		)
@@ -116,7 +116,7 @@ BEGIN TRY
 				,data.value('(event/data[@name="deadlock_id"]/value)[1]','int') AS deadlock_id
 				,data.value('(event/data[@name="transaction_id"]/value)[1]','int') AS transaction_id_query
 				,data.value('(event/data[@name="resource_type"]/text)[1]','varchar(10)') AS resource_type --какой тип блокировки наложен
-				--,data.value('(event/data[@name="xml_report"]/value)[1]','varchar(MAX)') as DEADLOCK_GRAF--это из xml_deadlock_report--вообе надо обрабатывать иначе
+				--,data.value('(event/data[@name="xml_report"]/value)[1]','varchar(MAX)') as DEADLOCK_GRAF--?это из xml_deadlock_report--вообе надо обрабатывать иначе
 				,CASE WHEN data.value('(event/@name)[1]','varchar(255)') = 'xml_deadlock_report'
 					  THEN [DATA]
 					  ELSE NULL
@@ -198,5 +198,7 @@ BEGIN TRY
 
 END TRY
 BEGIN CATCH
+	IF @@TRANCOUNT > 0
+	ROLLBACK;
 	--exec UTILITY.dbo.Catch
 END CATCH
