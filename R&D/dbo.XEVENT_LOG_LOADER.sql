@@ -140,6 +140,8 @@ BEGIN TRY
 			set @ROWS = @@ROWCOUNT;
 			IF @view = 1
 				print 'Сколько новых данных = ' + CAST(@ROWS as varchar(10));
+		
+		TRUNCATE TABLE #XML_DATA;
 
 		--вставка в основную таблицу
 		IF @view = 0
@@ -173,21 +175,22 @@ BEGIN TRY
 
 		FETCH NEXT FROM CUR INTO @XEVENT_NAME, @FILE_PATH;
 	END
-
 	CLOSE CUR;
-
 	DEALLOCATE CUR;
 
-IF @view = 1
-BEGIN
-	SELECT   XEVENT_NAME
-			,[EVENT]
-			,[UTCDATE]
-			,[VALUE]
-	FROM #VIEW_RESULT
-END;
+	DROP TABLE IF EXISTS #XML_DATA;
+	DROP TABLE IF EXISTS #RESULT;
+
+	IF @view = 1
+	BEGIN
+		SELECT   XEVENT_NAME
+				,[EVENT]
+				,[UTCDATE]
+				,[VALUE]
+		FROM #VIEW_RESULT
+	END;
 		
 END TRY
 BEGIN CATCH
-	--exec UTILITY.dbo.Catch;
+	exec UTILITY.dbo.Catch;
 END CATCH
