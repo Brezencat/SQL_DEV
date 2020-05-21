@@ -3,7 +3,7 @@ CREATE PROC dbo.XEVENT_LOG_LOADER
 		 @DATE datetime2 = null --для отбора записей по большему (или меньшему) периоду времени, формат datetime2
 		,@XEVENT_NAME varchar(255) = null --для запуска по конкретному эвенту
 		,@FILE_DIRECTORY varchar(255) = 'C:\Users\MSSQLSERVER\Documents\XEVENT_LOG' --'C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\Log\' папка сохранения файлов по умолчанию
-		,@view bit = 0
+		,@view bit = 0 --
 
 AS
 
@@ -25,23 +25,22 @@ BEGIN TRY
 	DROP TABLE IF EXISTS #XEVENT_LIST;
 
 	CREATE TABLE #XEVENT_LIST
-		( ID tinyint
+		( ID_ROW int
 		 ,XEVENT_NAME varchar(255)
 		);
 
 	IF @XEVENT_NAME is null
 	BEGIN
-		--вставка будет из справочника DIC_DICTIONARY
-		INSERT INTO #XEVENT_LIST (ID, XEVENT_NAME)
-		select	 ROW_NUMBER() over (order by ID) AS ID
-				,XEVENT_NAME
-		from dbo.XEVENT_LIST
-		where IS_ACTIVE = 1;
+		DECLARE  @S_DATE_TO datetime = getdate();
+
+		EXEC dbo.DIC_DICTIONARY_GET	  @DICTIONARY_NAME = 'Список эвентов для отслеживания'
+									, @TABLE_NAME = '#XEVENT_LIST'
+									, @DATE = @S_DATE_TO
 	END
 	ELSE
 	BEGIN
-		INSERT INTO #XEVENT_LIST (ID, XEVENT_NAME)
-		select   CAST(1 as tinyint) AS ID
+		INSERT INTO #XEVENT_LIST (ID_ROW, XEVENT_NAME)
+		select   CAST(1 as tinyint) AS ID_ROW
 				,XEVENT_NAME
 		from dbo.XEVENT_LIST
 		where XEVENT_NAME = @XEVENT_NAME;
@@ -84,6 +83,15 @@ BEGIN TRY
 		 ,[VALUE] 		XML 			NOT NULL --xml с данными события
 		);
 
+	IF @view = 1
+	BEGIN
+		CREATE TABLE #VIEW_RESULT
+			( XEVENT_NAME 	varchar(255)	NOT NULL --имя эвента
+			 ,[EVENT]		varchar(255) 	NOT NULL --имя события
+			 ,[UTCDATE]		datetime2 		NOT NULL --дата и время события 
+			 ,[VALUE] 		XML 			NOT NULL --xml с данными события
+			);
+	END
 
 	DECLARE @FILE_PATH varchar (255); -- переменная для пути к файлу
 
@@ -134,17 +142,34 @@ BEGIN TRY
 				print 'Сколько новых данных = ' + CAST(@ROWS as varchar(10));
 
 		--вставка в основную таблицу
-		INSERT INTO dbo.XEVENT_XML_BUFFER
-				( XEVENT_NAME
-				 ,[EVENT]
-				 ,[UTCDATE]
-				 ,[VALUE]
-				)
-		SELECT   XEVENT_NAME
-				,[EVENT]
-				,[UTCDATE]
-				,[VALUE]
-		FROM #RESULT;
+		IF @view = 0
+		BEGIN
+			INSERT INTO dbo.XEVENT_XML_BUFFER
+					( XEVENT_NAME
+					 ,[EVENT]
+					 ,[UTCDATE]
+					 ,[VALUE]
+					)
+			SELECT   XEVENT_NAME
+					,[EVENT]
+					,[UTCDATE]
+					,[VALUE]
+			FROM #RESULT;
+		END
+		ELSE
+		BEGIN
+			INSERT INTO #VIEW_RESULT
+					( XEVENT_NAME
+					 ,[EVENT]
+					 ,[UTCDATE]
+					 ,[VALUE]
+					)
+			SELECT   XEVENT_NAME
+					,[EVENT]
+					,[UTCDATE]
+					,[VALUE]
+			FROM #RESULT;
+		END;
 
 		FETCH NEXT FROM CUR INTO @XEVENT_NAME, @FILE_PATH;
 	END
@@ -152,6 +177,15 @@ BEGIN TRY
 	CLOSE CUR;
 
 	DEALLOCATE CUR;
+
+IF @view = 1
+BEGIN
+	SELECT   XEVENT_NAME
+			,[EVENT]
+			,[UTCDATE]
+			,[VALUE]
+	FROM #VIEW_RESULT
+END;
 		
 END TRY
 BEGIN CATCH
