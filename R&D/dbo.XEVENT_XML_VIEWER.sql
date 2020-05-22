@@ -3,7 +3,7 @@ CREATE PROC dbo.XEVENT_XML_VIEWER
 		 @DATE datetime2 = null --для отбора записей по большему (или меньшему) периоду времени, формат datetime2
 		,@XEVENT_NAME varchar(255) = null --для запуска по конкретному эвенту
 		,@FILE_DIRECTORY varchar(255) = 'C:\Users\MSSQLSERVER\Documents\XEVENT_LOG' --'C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\Log\' папка сохранения файлов по умолчанию
-		,@view bit = 0 --1
+		,@view bit = 0 --0 - запись в постоянную таблицу, 1 - возврат набора данных
 
 AS
 
@@ -14,29 +14,32 @@ BEGIN TRY
 
 	DECLARE	@ROWS int; --для логирования количества строк
 
+	--дата от которой будем собирать данные
 	IF @DATE is null
 	BEGIN
-		select @DATE = CAST(CONVERT(varchar(8), DATEADD(dd, -1, getutcdate()), 112) as datetime2)
+		select @DATE = CAST(CONVERT(varchar(8), DATEADD(dd, -1, getutcdate()), 121) as datetime2)
 	END;
 
 		IF @view = 1
 			print 'Дата отбора данных ' + CONVERT(varchar(19), @DATE, 121);
 
 
+	--набираем из буферной таблицы нужные нам данные. Если указано название эвента, то собираем данные только по нему.
+	--если режим для просмотра данных, то запускается процедура чтения файла лога эвента без сохранения данных.
+	DECLARE @sql nvarchar(4000) = '';
+
 	DROP TABLE IF EXISTS #XML_BUFFER;
-	
+
 	CREATE TABLE #XML_BUFFER
 		( ID			int
 		 ,XEVENT_NAME	varchar(255)
 		 ,[EVENT]		varchar(255)
-		 ,UTCDATE		datetime2(7)
+		 ,UTCDATE		datetime2
 		 ,[VALUE]		xml
 		);
-	
+
 	IF @view = 0
 	BEGIN
-		DECLARE @sql nvarchar(4000) = '';
-
 		SET @sql = 'SELECT	 ID
 							,XEVENT_NAME
 							,[EVENT]
@@ -48,7 +51,7 @@ BEGIN TRY
 		IF @XEVENT_NAME is not null
 		BEGIN
 			SET @sql = @sql + ' and XEVENT_NAME = ' + '''' + @XEVENT_NAME + '''';
-		END;
+		END
 		ELSE
 		BEGIN
 			INSERT INTO #XML_BUFFER
@@ -61,21 +64,17 @@ BEGIN TRY
 			EXEC sp_executesql	 @sql
 								,N'@DATEFROM datetime2'
 								,@DATE;
-		END
+		END;
 	END
 	ELSE
 	BEGIN
-		INSERT INTO #XML_BUFFER
-			( XEVENT_NAME
-			 ,[EVENT]
-			 ,UTCDATE
-			 ,[VALUE]
-			)
+
 		exec dbo.XEVENT_LOG_LOADER 
 			 @DATE = @DATE
 			,@XEVENT_NAME = @XEVENT_NAME 
 			,@FILE_DIRECTORY = @FILE_DIRECTORY
-			,@view = 1
+			,@view = 1 --в этом режиме запись во временную таблицу
+
 	END;
 
 
@@ -94,6 +93,7 @@ BEGIN TRY
 		 ,[VALUE] 		varchar(4000) 	--разные параметры
 		);
 
+	--парсим xml, для события deadlock отдельно, так как разбираем  внутренний xml-отчёт
 	WITH CTE AS
 		(
 			select   b.XEVENT_NAME
@@ -164,7 +164,7 @@ BEGIN TRY
 	IF @view = 1
 		print 'Сколько новых данных = ' + CAST(@ROWS as varchar(10));
 
-
+	--отбираем только новые данные, которые ещё не сохранены
 	SELECT   d.XEVENT_NAME
 			,d.[EVENT]
 			,d.UTCDATE
@@ -189,6 +189,7 @@ BEGIN TRY
 
 	DROP TABLE IF EXISTS #DATA;
 
+	--в зависимости от режима, либо вставляем данные в постоянную таблицу и удаляем xml из буфера, либо возвращаем набор данных
 	IF @view = 0
 	BEGIN
 		BEGIN TRAN
@@ -243,6 +244,7 @@ END TRY
 BEGIN CATCH
 	IF @@TRANCOUNT > 0
 		ROLLBACK;
+	THROW
 	--exec UTILITY.dbo.Catch
 END CATCH
 ;

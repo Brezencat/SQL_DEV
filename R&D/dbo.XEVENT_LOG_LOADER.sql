@@ -1,9 +1,9 @@
-CREATE PROC dbo.XEVENT_LOG_LOADER
+CREATE PROC [dbo].[XEVENT_LOG_LOADER]
 --declare  
 		 @DATE datetime2 = null --для отбора записей по большему (или меньшему) периоду времени, формат datetime2
 		,@XEVENT_NAME varchar(255) = null --для запуска по конкретному эвенту
 		,@FILE_DIRECTORY varchar(255) = 'C:\Users\MSSQLSERVER\Documents\XEVENT_LOG' --'C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\Log\' папка сохранения файлов по умолчанию
-		,@view bit = 0 --
+		,@view bit = 0 -- 0 - запись в постоянную таблицу, 1 - запись во временную таблицу, null - вывод набора данных (select)
 
 AS
 
@@ -83,9 +83,11 @@ BEGIN TRY
 		 ,[VALUE] 		XML 			NOT NULL --xml с данными события
 		);
 
-	IF @view = 1
+	IF @view is null
 	BEGIN
-		CREATE TABLE #VIEW_RESULT
+		DROP TABLE IF EXISTS #XML_BUFFER;
+
+		CREATE TABLE #XML_BUFFER
 			( XEVENT_NAME 	varchar(255)	NOT NULL --имя эвента
 			 ,[EVENT]		varchar(255) 	NOT NULL --имя события
 			 ,[UTCDATE]		datetime2 		NOT NULL --дата и время события 
@@ -160,7 +162,7 @@ BEGIN TRY
 		END
 		ELSE
 		BEGIN
-			INSERT INTO #VIEW_RESULT
+			INSERT INTO #XML_BUFFER
 					( XEVENT_NAME
 					 ,[EVENT]
 					 ,[UTCDATE]
@@ -181,16 +183,20 @@ BEGIN TRY
 	DROP TABLE IF EXISTS #XML_DATA;
 	DROP TABLE IF EXISTS #RESULT;
 
-	IF @view = 1
+	IF @view is null
 	BEGIN
-		SELECT   XEVENT_NAME
+		SELECT   ROW_NUMBER() OVER (ORDER BY XEVENT_NAME, [UTCDATE]) AS ID
+				,XEVENT_NAME
 				,[EVENT]
 				,[UTCDATE]
 				,[VALUE]
-		FROM #VIEW_RESULT
+		FROM #XML_BUFFER;
+
 	END;
 		
 END TRY
 BEGIN CATCH
-	exec UTILITY.dbo.Catch;
+	;THROW
+	--exec UTILITY.dbo.Catch;
 END CATCH
+;
