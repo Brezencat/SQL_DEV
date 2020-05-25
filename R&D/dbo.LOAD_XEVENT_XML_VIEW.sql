@@ -1,8 +1,8 @@
-CREATE PROC dbo.XEVENT_XML_VIEWER
+CREATE PROC dbo.LOAD_XEVENT_XML_VIEW
 --declare  
 		 @DATE datetime2 = null --отбор записей по большему (или меньшему) периоду времени, формат datetime2. Если указана дата, то отбор записей будет производиться от неё до текущего момента.
 		,@XEVENT_NAME varchar(255) = null ---запуск по конкретному эвенту. Если указано название XEvent, то процедура будет работать только по указанному эвенту.
-		,@FILE_DIRECTORY varchar(255) = 'C:\Users\MSSQLSERVER\Documents\XEVENT_LOG' --Путь к месту хранения файла лога эвента. Используется для передачи в процедуру загрузки буферной таблицы XEVENT_LOG_LOADER
+		,@FILE_DIRECTORY varchar(255) = 'C:\Users\MSSQLSERVER\Documents\XEVENT_LOG' --Путь к месту хранения файла лога эвента. Используется для передачи в процедуру загрузки буферной таблицы LOAD_XEVENT_XML_BUFFER
 		,@view bit = 0 --Режим работы процедуры: 0 - запись в постоянную таблицу, 1 - возврат набора данных
 
 AS
@@ -68,7 +68,7 @@ BEGIN TRY
 	END
 	ELSE
 	BEGIN
-		exec dbo.XEVENT_LOG_LOADER 
+		exec dbo.LOAD_XEVENT_XML_BUFFER 
 			 @DATE = @DATE
 			,@XEVENT_NAME = @XEVENT_NAME 
 			,@FILE_DIRECTORY = @FILE_DIRECTORY
@@ -175,7 +175,7 @@ BEGIN TRY
 			,d.[VALUE]
 	into #RESULT
 	FROM #DATA as d
-	LEFT JOIN dbo.XEVENT_LOG as l on not exists (select d.XEVENT_NAME, d.[EVENT], d.UTCDATE, d.SERVER_NAME, d.DATABASE_ID, d.[APP_NAME], d.USERNAME, d.SESSION_ID, d.[VALUE]
+	LEFT JOIN dbo.XEVENT_XML_VIEW as l on not exists (select d.XEVENT_NAME, d.[EVENT], d.UTCDATE, d.SERVER_NAME, d.DATABASE_ID, d.[APP_NAME], d.USERNAME, d.SESSION_ID, d.[VALUE]
 												 except
 												 select l.XEVENT_NAME, l.[EVENT], l.UTCDATE, l.SERVER_NAME, l.DATABASE_ID, l.[APP_NAME], l.USERNAME, l.SESSION_ID, d.[VALUE])
 	WHERE l.XEVENT_NAME is null;
@@ -192,7 +192,7 @@ BEGIN TRY
 	BEGIN
 		BEGIN TRAN
 		
-			INSERT INTO dbo.XEVENT_LOG
+			INSERT INTO dbo.XEVENT_XML_VIEW
 				( XEVENT_NAME
 				 ,[EVENT]
 				 ,UTCDATE
