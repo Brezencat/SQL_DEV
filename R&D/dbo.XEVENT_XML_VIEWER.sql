@@ -1,9 +1,9 @@
 CREATE PROC dbo.XEVENT_XML_VIEWER
 --declare  
-		 @DATE datetime2 = null --для отбора записей по большему (или меньшему) периоду времени, формат datetime2
-		,@XEVENT_NAME varchar(255) = null --для запуска по конкретному эвенту
-		,@FILE_DIRECTORY varchar(255) = 'C:\Users\MSSQLSERVER\Documents\XEVENT_LOG' --'C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\Log\' папка сохранения файлов по умолчанию
-		,@view bit = 0 --0 - запись в постоянную таблицу, 1 - возврат набора данных
+		 @DATE datetime2 = null --отбор записей по большему (или меньшему) периоду времени, формат datetime2. Если указана дата, то отбор записей будет производиться от неё до текущего момента.
+		,@XEVENT_NAME varchar(255) = null ---запуск по конкретному эвенту. Если указано название XEvent, то процедура будет работать только по указанному эвенту.
+		,@FILE_DIRECTORY varchar(255) = 'C:\Users\MSSQLSERVER\Documents\XEVENT_LOG' --Путь к месту хранения файла лога эвента. Используется для передачи в процедуру загрузки буферной таблицы XEVENT_LOG_LOADER
+		,@view bit = 0 --Режим работы процедуры: 0 - запись в постоянную таблицу, 1 - возврат набора данных
 
 AS
 
@@ -14,10 +14,10 @@ BEGIN TRY
 
 	DECLARE	@ROWS int; --для логирования количества строк
 
-	--дата от которой будем собирать данные
+--если дата не указана, то отбираем данные на дату Т-1 от UTC+0 (сервера)
 	IF @DATE is null
 	BEGIN
-		select @DATE = CAST(CONVERT(varchar(8), DATEADD(dd, -1, getutcdate()), 121) as datetime2)
+		select @DATE = CAST(CONVERT(varchar(8), DATEADD(dd, -5, getutcdate()), 112) as datetime2)
 	END;
 
 		IF @view = 1
@@ -28,15 +28,15 @@ BEGIN TRY
 	--если режим для просмотра данных, то запускается процедура чтения файла лога эвента без сохранения данных.
 	DECLARE @sql nvarchar(4000) = '';
 
-	DROP TABLE IF EXISTS #XML_BUFFER;
-
-	CREATE TABLE #XML_BUFFER
-		( ID			int
-		 ,XEVENT_NAME	varchar(255)
-		 ,[EVENT]		varchar(255)
-		 ,UTCDATE		datetime2
-		 ,[VALUE]		xml
-		);
+		DROP TABLE IF EXISTS #XML_BUFFER;
+	
+		CREATE TABLE #XML_BUFFER
+			( ID			int
+			 ,XEVENT_NAME	varchar(255)
+			 ,[EVENT]		varchar(255)
+			 ,UTCDATE		datetime2
+			 ,[VALUE]		xml
+			);
 
 	IF @view = 0
 	BEGIN
@@ -68,13 +68,11 @@ BEGIN TRY
 	END
 	ELSE
 	BEGIN
-
 		exec dbo.XEVENT_LOG_LOADER 
 			 @DATE = @DATE
 			,@XEVENT_NAME = @XEVENT_NAME 
 			,@FILE_DIRECTORY = @FILE_DIRECTORY
-			,@view = 1 --в этом режиме запись во временную таблицу
-
+			,@view = 1 --в этом режиме процедура записывает данные во времянку
 	END;
 
 
@@ -83,17 +81,17 @@ BEGIN TRY
 	CREATE TABLE #DATA
 		( XEVENT_NAME 	varchar(255)	--имя XEvent
 		 ,[EVENT]		varchar(255) 	--имя собоытия из XML
-		 ,UTCDATE 		datetime2 		--дата и время проишествия
+		 ,UTCDATE 		datetime2 		--дата и время проишествия UTC +0
 		 ,SERVER_NAME 	varchar(255)	--client_hostname
-		 ,DATABASE_ID 	tinyint 		--smallint ???
+		 ,DATABASE_ID 	tinyint 
 		 ,[APP_NAME] 	varchar(255) 	--client_app_name
-		 ,USERNAME 		varchar(255)	
+		 ,USERNAME 		varchar(255)	--nt_username или usernsme
 		 ,SESSION_ID 	smallint		--SPID
 		 ,SQL_TEXT 		varchar(4000) 	--тексты запросов
 		 ,[VALUE] 		varchar(4000) 	--разные параметры
 		);
 
-	--парсим xml, для события deadlock отдельно, так как разбираем  внутренний xml-отчёт
+	--дробим xml, для события deadlock отдельно, так как разбираем внутренний xml-отчёт
 	WITH CTE AS
 		(
 			select   b.XEVENT_NAME
@@ -107,15 +105,15 @@ BEGIN TRY
 					,p.v.value ('(inputbuf)[1]','varchar(4000)') AS SQL_TEXT
 					,SUBSTRING(p.v.value ('(@waitresource)','varchar(255)')
 								, 1
-								, CHARINDEX(':',p.v.value ('(@waitresource)','varchar(255)'))-1) AS RESOURCE_LOCK
+								, CHARINDEX(':',p.v.value ('(@waitresource)','varchar(255)'))-1) AS RESOURCE_LOCK --после ":" указывается какой-то ID
 					,d.v.value ('(victim-list/victimProcess/@id)[1]','varchar(255)') AS dead_process_id
 					,p.v.value ('(@id)[1]','varchar(255)') AS process_id
 					--,p.v.value ('(executionStack/frame/@sqlhandle)[1]','varchar(255)') AS PLAN_HANDLE
 			from #XML_BUFFER AS b
-			cross apply b.value.nodes('event/data/value/deadlock') AS d(v)
-			cross apply d.v.nodes('process-list/process') AS p(v)
+			cross apply b.value.nodes('event/data/value/deadlock') AS d(v) --дробим xml два раза, так как SQL Server плохо смотрит назад (на уровень выше)
+			cross apply d.v.nodes('process-list/process') AS p(v) --дробление от уже раздробленной XML
 			where XEVENT_NAME = 'DEADLOCK_MONITOR'
-				and [EVENT] = 'xml_deadlock_report'
+				and [EVENT] = 'xml_deadlock_report' --событие с xml отчётом
 		)
 	INSERT INTO #DATA
 		( XEVENT_NAME
@@ -139,7 +137,7 @@ BEGIN TRY
 			,SESSION_ID
 			,SQL_TEXT 
 			,IIF(dead_process_id = process_id, 'KILL, RESOURCE_LOCK: ', 'RESOURCE_LOCK: ') 
-				+ RESOURCE_LOCK AS [VALUE]
+				+ RESOURCE_LOCK AS [VALUE] --находим процесс, который был выбран в качестве жертвы при взаимной блокировке
 	FROM CTE
 		
 	UNION ALL
