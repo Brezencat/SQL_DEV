@@ -3,11 +3,11 @@ CREATE TABLE dbo.XEVENT_XML_VIEW
      ,[XEVENT_NAME] 	varchar(255) 		NOT NULL
      ,[EVENT]			varchar(255) 		NOT NULL
      ,[UTCDATE]	 		datetime2 			NOT NULL --!!! именно UTC +0
-     ,[SERVER_NAME] 	varchar(255) 		NOT NULL
-     ,[DATABASE_ID] 	tinyint 			NOT NULL --??? smallint
-     ,[APP_NAME] 		varchar(255) 		NOT NULL
-     ,[USERNAME]		varchar(255) 		NOT NULL 
-     ,[SESSION_ID] 		smallint 			NOT NULL
+     ,[SERVER_NAME] 	varchar(255) 		NULL
+     ,[DATABASE_ID] 	tinyint 			NULL --??? smallint
+     ,[APP_NAME] 		varchar(255) 		NULL
+     ,[USERNAME]		varchar(255) 		NULL 
+     ,[SESSION_ID] 		smallint 			NULL
      ,[SQL_TEXT] 		varchar(4000) 		NULL
      ,[VALUE] 			varchar(4000) 		NULL
     );

@@ -135,7 +135,7 @@ BEGIN TRY
 				,CAST(timestamp_utc as datetime2) AS [UTCDATE]
 				,CAST(event_data as XML) AS [VALUE]
 				--,[file_name]
-		FROM sys.fn_xe_file_target_read_file (@FILE_DIRECTORY + '\ ' + @FILE_PATH, null, null, null)
+		FROM sys.fn_xe_file_target_read_file (@FILE_DIRECTORY + '\' + @FILE_PATH, null, null, null)
 		WHERE CAST(timestamp_utc as datetime2) >= @DATE;
 		
 			set @ROWS = @@ROWCOUNT;
