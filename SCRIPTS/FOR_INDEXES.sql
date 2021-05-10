@@ -48,16 +48,19 @@ ORDER BY I.object_id, I.name;
 --sys.dm_db_missing_index_group_stats
 
 --Поиск недостающих индексов
-SELECT
-	MID.statement AS [Database.Schema.Table], 
-	MIC.column_id AS ColumnId,
-	MIC.column_name AS ColumnName,
-	MIC.column_usage AS ColumnUsage,
-	MIGS.user_seeks AS UserSeeks,
-	MIGS.user_scans AS UserScans,
-	MIGS.last_user_seek AS LastUserSeek, 
-	MIGS.avg_total_user_cost AS AvgQueryCostReduction, 
-	MIGS.avg_user_impact AS AvgPctBenefit
+SELECT 	MID.statement AS [Database.Schema.Table]
+	,	MID.Equality_Columns
+	,	MID.Inequality_Columns
+	,	MID.Included_Columns
+	,	(MIGS.User_Seeks + MIGS.Users_Scans) * MIGS.Avg_Total_User_Cost * MIGS.Avg_User_Impact AS total_cost --ожидаемое совокупное улучшение производительности запросов
+	,	MIC.column_id AS ColumnId
+	,	MIC.column_name AS ColumnName
+	,	MIC.column_usage AS ColumnUsage
+	,	MIGS.user_seeks AS UserSeeks
+	,	MIGS.user_scans AS UserScans
+	,	MIGS.last_user_seek AS LastUserSeek
+	,	MIGS.avg_total_user_cost AS AvgQueryCostReduction
+	,	MIGS.avg_user_impact AS AvgPctBenefit
 FROM sys.dm_db_missing_index_details AS MID
 CROSS APPLY sys.dm_db_missing_index_columns (MID.index_handle) AS MIC 
 INNER JOIN sys.dm_db_missing_index_groups AS MIG 
