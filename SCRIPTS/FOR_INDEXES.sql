@@ -48,25 +48,46 @@ ORDER BY I.object_id, I.name;
 --sys.dm_db_missing_index_group_stats
 
 --Поиск недостающих индексов
-SELECT 	MID.statement AS [Database.Schema.Table]
-	,	MID.Equality_Columns
-	,	MID.Inequality_Columns
-	,	MID.Included_Columns
-	,	(MIGS.User_Seeks + MIGS.Users_Scans) * MIGS.Avg_Total_User_Cost * MIGS.Avg_User_Impact AS total_cost --ожидаемое совокупное улучшение производительности запросов
-	,	MIC.column_id AS ColumnId
-	,	MIC.column_name AS ColumnName
-	,	MIC.column_usage AS ColumnUsage
-	,	MIGS.user_seeks AS UserSeeks
-	,	MIGS.user_scans AS UserScans
-	,	MIGS.last_user_seek AS LastUserSeek
-	,	MIGS.avg_total_user_cost AS AvgQueryCostReduction
-	,	MIGS.avg_user_impact AS AvgPctBenefit
+--расширенный вариант с описанием использования столбцов
+SELECT	MID.statement AS [Database.Schema.Table]
+, 	MID.Equality_Columns --столбцы предикаты равенства (=)
+, 	MID.Inequality_Columns --предикаты неравенства (<>, >=, <=)
+, 	MID.Included_Columns --список запрашиваемых столбцов
+, 	(MIGS.User_Seeks + MIGS.User_Scans) * MIGS.Avg_Total_User_Cost * MIGS.Avg_User_Impact AS total_cost --ожидаемое совокупное улучшение производительности запросов
+, 	MIC.column_id AS ColumnId
+, 	MIC.column_name AS ColumnName
+, 	MIC.column_usage AS ColumnUsage --тип использования столбца в запросе
+, 	MIGS.user_seeks AS UserSeeks --количество попыток поисков в индексе
+, 	MIGS.user_scans AS UserScans --количество попыток сканирования индекса
+, 	MIGS.last_user_seek AS LastUserSeek --дата и время последней попытки обратиться к индексу
+, 	MIGS.avg_total_user_cost AS AvgQueryCostReduction --среднее снижение стоимости запроса
+, 	MIGS.avg_user_impact AS AvgPctBenefit --средний процент выигрыша от использования этого индекса
 FROM sys.dm_db_missing_index_details AS MID
 CROSS APPLY sys.dm_db_missing_index_columns (MID.index_handle) AS MIC 
 INNER JOIN sys.dm_db_missing_index_groups AS MIG 
 	ON MIG.index_handle = MID.index_handle
 INNER JOIN sys.dm_db_missing_index_group_stats AS MIGS 
 	ON MIG.index_group_handle = MIGS.group_handle 
+WHERE MID.statement = '<[база].[схема].[таблица]>'
+ORDER BY MIGS.avg_user_impact DESC;
+
+--краткий вариант, только индекс, без зарвёрнутого указания использования каджой колонки 
+SELECT 	MID.statement AS [Database.Schema.Table]
+, 	MID.Equality_Columns --столбцы предикаты равенства (=)
+, 	MID.Inequality_Columns --предикаты неравенства (<>, >=, <=)
+, 	MID.Included_Columns --список запрашиваемых столбцов
+, 	MIGS.user_seeks AS UserSeeks --количество попыток поисков в индексе
+, 	MIGS.user_scans AS UserScans --количество попыток сканирования индекса
+, 	MIGS.last_user_seek AS LastUserSeek --дата и время последней попытки обратиться к индексу
+, 	MIGS.avg_total_user_cost AS AvgQueryCostReduction --среднее снижение стоимости запроса
+, 	MIGS.avg_user_impact AS AvgPctBenefit --средний процент выигрыша от использования этого индекса
+, 	(MIGS.User_Seeks + MIGS.User_Scans) * MIGS.Avg_Total_User_Cost * MIGS.Avg_User_Impact AS total_cost --ожидаемое совокупное улучшение производительности запросов
+FROM sys.dm_db_missing_index_details AS MID
+INNER JOIN sys.dm_db_missing_index_groups AS MIG 
+	ON MIG.index_handle = MID.index_handle
+INNER JOIN sys.dm_db_missing_index_group_stats AS MIGS 
+	ON MIG.index_group_handle = MIGS.group_handle 
+WHERE MID.statement = '<[база].[схема].[таблица]>'
 ORDER BY MIGS.avg_user_impact DESC;
 
 
