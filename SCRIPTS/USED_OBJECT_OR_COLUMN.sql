@@ -30,6 +30,30 @@ inner join sys.schemas as s
 where c.[name] ='name'
 ;
 
+--поиск по индексам
+
+select	i.[name]
+	,	s.[name] + '.' + o.[name] as [parent_name]
+	,	o.[type_desc]
+	,	c.[name] as column_name
+	,	t.[name] as data_type
+	,	IIF(c.is_nullable = 1, 'NULL', 'NOT NULL') as nullable
+	,	IIF(c.is_identity = 1, 'IDENTITY', '') as [identity] 
+from sys.index_columns as ic
+inner join sys.all_columns as c
+	on c.object_id = ic.object_id
+	and c.column_id = ic.column_id
+inner join sys.types as t
+	on t.user_type_id = c.user_type_id
+inner join sys.indexes as i
+	on i.index_id = ic.index_id
+	and i.object_id = ic.object_id
+inner join sys.objects as o
+	on o.object_id = c.object_id
+inner join sys.schemas as s
+	on s.schema_id = o.schema_id
+where c.[name] ='name'
+;
 
 --==============================================================
 --Для процедуры поиска использования объекта по всем базам сервера
