@@ -1,39 +1,59 @@
-# SQL
+# [SQL](https://ru.wikipedia.org/wiki/SQL)
 Скрипты, тесты, обучение, домашняя работа по SQL
 
-### EDUCATION 
-- interview_questions - вопросы для собеседования
-- Cbk_trans_arn - формирование отчёта по чарджбекам на основании идентификаторов оригинальных транзакций.
-- решение т.з. РТС-Трейдинг - тестовое задание и его решение по SQL после прохождения собеседования в РТС-Трейдинг
-- Exam70-461_solutions - решения заданий из книги "Учебный курс Microsoft SQL Server 2012 Exam 70-461"
-- cross_apply - пример использования CROSS_APPLY и разница с JOIN
-- CTE рекурсия - примеры рекурсивного запроса CTE
-- work_and_or - интересный пример на обработку AND и OR
+### [SCRIPTS](./SCRIPTS/)
+* [exist_column_in_table](./SCRIPTS/exist_column_in_table.sql) - Есть ли столбец в таблице. Несколько способов проверки существования столбца в таблице
+* [EXTENDED_PROPERTIES](./SCRIPTS/EXTENDED_PROPERTIES.sql) - Описание объектов и колонок БД с помощью расширенных свойств
+* [FOR_INDEXES](./SCRIPTS/FOR_INDEXES.sql) - скрипт для просмотра индексов (используемые, недостающие)
+* [FOR_STATISTICS](./SCRIPTS/FOR_STATISTICS.sql) - статистика таблицы, удаление автостатистики
+* [INFO_FOR_SERVER](./SCRIPTS/INFO_FOR_SERVER.sql) - знакомство с сервером
+* [LAST_ACCESS_OBJECT](./SCRIPTS/LAST_ACCESS_OBJECT.sql) - обращения к объектам БД (когда было последнее обращение). Это не 100% способ проверки на основе sys.dm_db_index_usage_stats
+* [other](./SCRIPTS/other.sql) - разные скрипты и их куски
+* [PARTITIONS_TABLE](./SCRIPTS/PARTITIONS_TABLE.sql) - партиции секционированной таблицы
+* [REVIEW_QUERY_STORE](./SCRIPTS/REVIEW_QUERY_STORE.sql) - просмотр планов и текстов запросов из Query Store
+* [script-templates](./SCRIPTS/templates.sql) - шаблоны скриптов для расчётов
+* [SEARCH_IN_CACHE_PLANS](./SCRIPTS/SEARCH_IN_CACHE_PLANS.sql) - поиск запроса по его части в кэше планов
+* [SERVER_SITUATION](./SCRIPTS/SERVER_SITUATION.sql) - ситуация на сервере (активные сессии, блокировки)
+* [SPACE_USED](./SCRIPTS/SPACE_USED.sql) - сколько места занимаем БД (объекты в БД)
+* [USED_OBJECT_OR_COLUMN](./SCRIPTS/USED_OBJECT_OR_COLUMN.sql) - где используется объект или колонка
+* [XACT_ABORT](./SCRIPTS/XACT_ABORT.sql) - определение статуса xact_abort
 
-### R&D (Research & Development - командные задачи из Trello)
-- dbo.WhoIsActiveLog - таблица для записи лога вывода процедуры WhoIsActive, пример запуска процедуры для возврата метаданных таблицы и запуск процедуры с записью вывода в таблицу лога
 
-### SCRIPTS
-- FOR_INDEXES - скрипт для просмотра индексов (используемые, недостающие)
-- FOR_STATISTICS - статистика таблицы, удаление автостатистики
-- INFO_FOR_SERVER - знакомство с сервером
-- PARTITIONS_TABLE - партиции секционированной таблицы
-- SERVER_SITUATION - ситуация на сервере (активные сессии, блокировки)
-- XACT_ABORT - определение статуса xact_abort
-- other - разные скрипты и их куски
-- script-templates - шаблоны скриптов для расчётов
-- exist_column_in_table - Есть ли столбец в таблице. Несколько способов проверки существования столбца в таблице
+### [EDUCATION](./EDUCATION/) 
+* Рекурсия календарь и фильтрованный индекс
+* Рекурсия с датами
+* [решение т.з. РТС-Трейдинг](./EDUCATION/решение%20т.з.%20РТС-Трейдинг.sql) - тестовое задание и его решение по SQL после прохождения собеседования в РТС-Трейдинг
+* [тестовое задание SQL РТС-Трейдинг](./EDUCATION/тестовое%20задание%20SQL%20РТС-Трейдинг.sql) - само тестовое задание
+* [Cbk_trans_arn](./EDUCATION/Cbk_trans_arn.sql) - формирование отчёта по чарджбекам на основании идентификаторов оригинальных транзакций (Oraccle).
+* [cross_apply](./EDUCATION/cross_apply.sql) - пример использования CROSS_APPLY и разница с JOIN
+* [CTE рекурсия](./EDUCATION/CTE%20рекурсия.sql) - примеры рекурсивного запроса CTE
+* EVENT SESSION SQL_batch_statement_by_TSQL2012
+* [Exam70-461_solutions](./EDUCATION/Exam70-461_solutions.sql) - решения заданий из книги "Учебный курс Microsoft SQL Server 2012 Exam 70-461"
+* EXISTS_NOT_EXISTS_FOR_JOIN
+* foot.MATCH
+* [interview_questions](./EDUCATION/interview_questions.sql) - вопросы для собеседования
+* OVER and PIVOT
+* rally.DAKAR
+* test.RUN
+* [work_and_or](./EDUCATION/work_and_or.sql) - интересный пример на обработку AND и OR
 
-### XEvents
+
+### [other](./other/)
+- [Hacking_FBI](./Hacking_FBI.sql) - FUNNY скрипт взлома ФБР
+
+
+### [R&D](./R&D/) (Research & Development - командные задачи из Trello)
+* [dbo.WhoIsActiveLog](./dbo.WhoIsActiveLog.sql) - таблица для записи лога вывода процедуры WhoIsActive, пример запуска процедуры для возврата метаданных таблицы и запуск процедуры с записью вывода в таблицу лога
+
+
+### [XEvents](./XEvents/)
 _Задача: Настройка extended event и сервис просмотра логов_  
-- Список операция для мониторинга
-    1. Deadlock
-    2. Межсерверные запросы
-    3. Какое приложение кроме студии подключается к БД
-    4. Под каким логином идёт подключение к серверу
-    5. Тяжелых запросов по логическим чтениям
-    6. Тяжелые запросы по CPU
-- дальнейшее описание
+* Список операция для мониторинга
+  * Deadlock
+  * Межсерверные запросы
+  * Какое приложение кроме студии подключается к БД
+  * Под каким логином идёт подключение к серверу
+  * Тяжелых запросов по логическим чтениям
+  * Тяжелые запросы по CPU
+* дальнейшее описание
 
-### other
-- Hacking_FBI - FUNNY скрипт взлома ФБР
