@@ -10,3 +10,8 @@ exec sp_recompile '<proc_name>';
 OPTION (RECOMPILE);
 OPTION (OPTIMIZE FOR UNKNOWN);
 
+
+--ошибки джобов
+EXEC dbo.sp_help_jobhistory
+;
+
