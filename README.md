@@ -35,6 +35,7 @@
 * OVER and PIVOT
 * rally.DAKAR
 * test.RUN
+* [types_of_joins](./EDUCATION/types_of_joins.sql) - пример видов соединений (join)
 * [work_and_or](./EDUCATION/work_and_or.sql) - интересный пример на обработку AND и OR
 
 
