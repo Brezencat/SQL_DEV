@@ -25,6 +25,7 @@
 * [решение т.з. РТС-Трейдинг](./EDUCATION/решение%20т.з.%20РТС-Трейдинг.sql) - тестовое задание и его решение по SQL после прохождения собеседования в РТС-Трейдинг
 * [тестовое задание SQL РТС-Трейдинг](./EDUCATION/тестовое%20задание%20SQL%20РТС-Трейдинг.sql) - само тестовое задание
 * [Cbk_trans_arn](./EDUCATION/Cbk_trans_arn.sql) - формирование отчёта по чарджбекам на основании идентификаторов оригинальных транзакций (Oraccle).
+* [count_groups.sql](./EDUCATION/count_groups.sql) - пример работы группировки на примере агрегатной функции count()
 * [cross_apply](./EDUCATION/cross_apply.sql) - пример использования CROSS_APPLY и разница с JOIN
 * [CTE рекурсия](./EDUCATION/CTE%20рекурсия.sql) - примеры рекурсивного запроса CTE
 * EVENT SESSION SQL_batch_statement_by_TSQL2012
