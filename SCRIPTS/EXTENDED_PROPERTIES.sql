@@ -38,6 +38,56 @@ EXEC sp_addextendedproperty @name = N'MS_Description', --здесь также �
     @level2type = N'COLUMN', --CONSTRAINT, INDEX, TRIGGER 
     @level2name = N'<название столбца>'
 
+--Скрипт автоматического формирования запроса на добавление описания по конкретному объекту
+--нужно добавить исключение или обновление по уже существующему описанию
+select  s.name AS level0name
+	,	o.name AS level1name
+	,	CASE o.type
+			WHEN 'U' THEN 'TABLE'
+			WHEN 'V' THEN 'VIEW'
+			WHEN 'P' THEN 'PROCEDURE'
+			WHEN 'D' THEN 'DEFAULT'
+			WHEN 'TF' THEN 'FUNCTION'
+			WHEN 'FN' THEN 'FUNCTION'
+			ELSE 'N/A'
+		END AS level1type
+	,	CASE o.type
+			WHEN 'D' THEN 'CONSTRAINT'
+			WHEN 'PK' THEN 'CONSTRAINT'
+			ELSE 'COLUMN'
+		END AS level2type
+	,	c.name AS level2name
+	,	'
+			EXEC sp_addextendedproperty @name = N''MS_Description'',
+				@value = N''<...>'',
+				@level0type = N''SCHEMA'',
+				@level0name = N''' + s.name + ''',
+				@level1type = N''' +	CASE o.type
+										WHEN 'U' THEN 'TABLE'
+										WHEN 'V' THEN 'VIEW'
+										WHEN 'P' THEN 'PROCEDURE'
+										WHEN 'D' THEN 'DEFAULT'
+										WHEN 'TF' THEN 'FUNCTION'
+										WHEN 'FN' THEN 'FUNCTION'
+										ELSE 'N/A'
+									END + ''', 
+				@level1name = N''' + o.name + ''',
+				@level2type = N''' +	CASE o.type
+										WHEN 'D' THEN 'CONSTRAINT'
+										WHEN 'PK' THEN 'CONSTRAINT'
+										ELSE 'COLUMN'
+									END + ''',
+				@level2name = N''' + c.name + '''
+		' AS ADD_EXTENDED_PROPERTY
+from sys.objects as o
+inner join sys.schemas as s
+	on s.schema_id = o.schema_id
+inner join sys.all_columns as c
+	on c.object_id = o.object_id
+where s.name <> 'sys' --исключаем системаные объекты
+	and o.object_id = OBJECT_ID('dbo.TABLE_NAME')
+;
+
 
 --более расширенный запрос, который выводит описание не только столбцов, но и самого объекта
 ;WITH DESCR AS (
