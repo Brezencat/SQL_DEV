@@ -78,6 +78,7 @@ select  s.name AS level0name
 										ELSE 'COLUMN'
 									END + ''',
 				@level2name = N''' + c.name + '''
+			GO
 		' AS ADD_EXTENDED_PROPERTY
 from sys.objects as o
 inner join sys.schemas as s
