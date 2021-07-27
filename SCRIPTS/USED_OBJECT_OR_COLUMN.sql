@@ -55,14 +55,15 @@ inner join sys.schemas as s
 where c.[name] ='name'
 ;
 
---==============================================================
+--=================================================================
 --Для процедуры поиска использования объекта по всем базам сервера
---==============================================================
-DECLARE @search_obj_name varchar(255) = 'name'; --название (или часть) объектра, по которому ищем зависимости
+--=================================================================
+DECLARE @search_obj_name varchar(255) = 'name' --название (или часть) объектра, по которому ищем зависимости
+	,	@is_used bit = 0; --признак поиска объекта или использования объекта в коде. 0 - поиск объекта, 1 - поиск, где используется объект
 
-DECLARE @i tinyint = 1
-	,	@dbname varchar(255)
-	,	@sql varchar(1000);
+DECLARE @i tinyint = 1 --число итераций для цикла
+	,	@dbname varchar(255) --имя БД, в которой производится поиск
+	,	@sql varchar(1000); --скрипт, который формируется для поиска
 
 DROP TABLE IF EXISTS #list_db;
 
@@ -82,26 +83,42 @@ CREATE TABLE #OBJECT_USE
 
 WHILE @i < (select count(*) from #list_db)
 BEGIN
-	select @dbname = [name]
-	from #list_db
-	where num = @i;
+	SELECT @dbname = [name]
+	FROM #list_db
+	WHERE num = @i;
 
-	set @sql =
-		'select	''' + @dbname + ''' as dbname
-			,	s.name + ''.'' + o.name
-			,	o.type_desc
-		from [' + @dbname + '].sys.sql_modules as sm
-		inner join [' + @dbname + '].sys.all_objects as o
-			on o.object_id = sm.object_id
-		inner join [' + @dbname + '].sys.schemas as s
-			on s.schema_id = o.schema_id
-		where [definition] like ''%' + @search_obj_name + '%''';
-	
-	insert into #OBJECT_USE
+	IF @is_used = 1
+	BEGIN
+		set @sql =
+			'select	''' + @dbname + ''' as dbname
+				,	s.name + ''.'' + o.name as obj_name
+				,	o.type_desc
+			from [' + @dbname + '].sys.sql_modules as sm
+			inner join [' + @dbname + '].sys.all_objects as o
+				on o.object_id = sm.object_id
+			inner join [' + @dbname + '].sys.schemas as s
+				on s.schema_id = o.schema_id
+			where [definition] like ''%' + @search_obj_name + '%''';
+	END
+	ELSE IF @is_used = 0
+	BEGIN
+		set @sql =
+			'select	''' + @dbname + ''' as dbname
+				,	s.name + ''.'' + o.name as obj_name
+				,	o.type_desc
+			from [' + @dbname + '].sys.all_objects as o
+			inner join [' + @dbname + '].sys.schemas as s
+				on s.schema_id = o.schema_id
+			where o.[name] like ''%' + @search_obj_name + '%''';
+	END
+	ELSE
+		BREAK;
+
+	INSERT INTO #OBJECT_USE
 		(DBNAME, OBJ_NAME, OBJ_TYPE)
-	exec (@sql);
+	EXEC (@sql);
 
-	set @i += 1;
+	SET @i += 1;
 END
 
 SELECT DBNAME, OBJ_NAME, OBJ_TYPE FROM #OBJECT_USE;
