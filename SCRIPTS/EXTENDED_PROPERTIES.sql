@@ -92,10 +92,11 @@ where s.name <> 'sys' --исключаем системаные объекты
 
 --более расширенный запрос, который выводит описание не только столбцов, но и самого объекта
 ;WITH DESCR AS (
-	SELECT	c.[name] AS TABLE_NAME
+	SELECT	'' AS TABLE_NAME
+		,	c.[name] AS COLUMN_NAME
 		,	c.column_id
 		,	c.[object_id]
-		,	t.[name] as COLUMN_NAME			
+		,	t.[name] as DATA_TYPE			
 		,	CASE 
 				WHEN c.max_length = -1 THEN 'MAX' 
 				WHEN t.[name] in ('bigint', 'int', 'smallint', 'tinyint', 'bit', 'uniqueidentifier', 'datetime') THEN ''
@@ -120,6 +121,7 @@ where s.name <> 'sys' --исключаем системаные объекты
 	UNION ALL
 
 	SELECT	QUOTENAME(s.[name]) + '.' + QUOTENAME(o.[name])
+		,	''
 		,	0
 		,	o.[object_id]
 		,	''
@@ -136,7 +138,65 @@ where s.name <> 'sys' --исключаем системаные объекты
 		AND ep.minor_id = 0
 )
 SELECT	TABLE_NAME
-	,	IIF([LENGTH] <> '', COLUMN_NAME + '(' + [LENGTH] + ')', COLUMN_NAME) as DATA_TYPE
+	,	COLUMN_NAME
+	,	IIF([LENGTH] <> '', DATA_TYPE + '(' + [LENGTH] + ')', DATA_TYPE) as DATA_TYPE
+	,	NULLABLE
+	,	DESCRIPTION_TYPE
+	,	[DESCRIPTION]
+FROM DESCR
+ORDER BY object_id, column_id
+;
+
+--Вариант, с выводом названия таблицы напротив каждого названия столбца
+;WITH DESCR AS (
+	SELECT	s.[name] + '.' + o.[name] AS TABLE_NAME
+		,	c.[name] AS COLUMN_NAME
+		,	c.column_id
+		,	c.[object_id]
+		,	t.[name] as DATA_TYPE			
+		,	CASE 
+				WHEN c.max_length = -1 THEN 'MAX' 
+				WHEN t.[name] in ('bigint', 'int', 'smallint', 'tinyint', 'bit', 'uniqueidentifier', 'datetime') THEN ''
+				ELSE ISNULL(CAST(c.max_length as nvarchar),'') 
+			END AS [LENGTH]
+		,	IIF(c.is_nullable = 0, 'not null', 'null') AS NULLABLE
+		,	ISNULL(ep.[name], '') AS DESCRIPTION_TYPE
+		,	ISNULL(ep.[value], '') AS [DESCRIPTION]
+	FROM sys.schemas AS s
+	INNER JOIN sys.objects AS o
+		ON o.[schema_id] = s.[schema_id]
+		AND s.[name] <> 'sys'
+	INNER JOIN sys.columns AS c 
+		ON c.[object_id] = o.[object_id]
+	INNER JOIN sys.types AS t
+		ON t.system_type_id = c.system_type_id
+		AND t.user_type_id = c.user_type_id
+	LEFT JOIN sys.extended_properties AS ep 
+		ON ep.major_id = o.[object_id] 
+		AND ep.minor_id = c.column_id
+	
+	UNION ALL
+
+	SELECT	QUOTENAME(s.[name]) + '.' + QUOTENAME(o.[name])
+		,	''
+		,	0
+		,	o.[object_id]
+		,	''
+		,	''
+		,	''
+		,	ISNULL(ep.[name], '')
+		,	ISNULL(ep.[value], '')
+	FROM	sys.schemas AS s
+	INNER JOIN sys.objects AS o
+		ON o.[schema_id] = s.[schema_id]
+		AND s.[name] <> 'sys'						
+	LEFT JOIN sys.extended_properties AS ep 
+		ON ep.major_id = o.[object_id] 
+		AND ep.minor_id = 0
+)
+SELECT	TABLE_NAME
+	,	COLUMN_NAME
+	,	IIF([LENGTH] <> '', DATA_TYPE + '(' + [LENGTH] + ')', DATA_TYPE) as DATA_TYPE
 	,	NULLABLE
 	,	DESCRIPTION_TYPE
 	,	[DESCRIPTION]
