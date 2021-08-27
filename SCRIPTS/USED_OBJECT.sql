@@ -3,7 +3,7 @@
 --парамерт @mode = 0 - поиска объекта (таблицы, представления, функции, процедуры и т.п.) на сервере по всем БД
 --параметр @mode = 1 - выводит, где используется объект в скриптах
 
-CREATE PROC dbo.USED_OBJECT
+CREATE OR ALTER PROC [dbo].[USED_OBJECT]
 --declare
         @search_obj_name varchar(255) --название (или часть названия) объектра, который ищем
     ,	@mode bit = 1 --признак поиска объекта или использования объекта в коде. 0 - поиск объекта, 1 - поиск, где используется объект
@@ -22,7 +22,8 @@ BEGIN TRY
         ,	[name]
     into #list_db
     FROM sys.databases 
-    WHERE [name] not in ('master', 'tempdb', 'model', 'msdb');
+    WHERE [name] not in ('master', 'tempdb', 'model', 'msdb')
+        AND STATE = 0;
 
 --временная таблица для сбора результатов поиска
     DROP TABLE IF EXISTS #OBJECT_USE;
@@ -79,5 +80,15 @@ BEGIN TRY
 
 END TRY
 BEGIN CATCH
-    THROW;
+--вывод ошибки в формате xml
+				select  ERROR_NUMBER() AS [@ErrorNumber]  
+					,	ERROR_SEVERITY() AS [@Severity]  
+					,	ERROR_STATE() AS [@ErrorState]  
+					,	ERROR_PROCEDURE() AS [@ErrorProcedure] 
+					,	ERROR_LINE() AS [@ErrorLine]
+					,	ERROR_MESSAGE() AS [@ErrorMessage]
+				for xml path ('error')
+                ;
+
+	THROW;
 END CATCH;
