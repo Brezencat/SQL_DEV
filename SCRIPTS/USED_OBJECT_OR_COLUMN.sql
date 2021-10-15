@@ -15,19 +15,25 @@ where [definition] like '%objects%'
 --==============================================================
 --где используется колонка
 
-select s.[name] + '.' + o.[name] as table_name
-	,	c.[name] as column_name
-	,	t.[name] as data_type
-	,	IIF(c.is_nullable = 1, 'NULL', 'NOT NULL') as nullable
-	,	IIF(c.is_identity = 1, 'IDENTITY', '') as [identity]
-from sys.all_columns as c
-inner join sys.types as t
+select s.[name] + '.' + o.[name] AS table_name
+	,	c.[name] AS column_name
+	,	CASE 
+			WHEN c.max_length = -1 THEN t.[name] + N'(MAX)' 
+			WHEN t.[name] in ('bigint', 'int', 'smallint', 'tinyint', 'bit', 'uniqueidentifier', 'datetime') THEN t.[name] + N''
+			WHEN t.[name] = 'nvarchar' THEN t.[name] + N'(' + CAST(c.max_length / 2 as nvarchar) + N')'
+			WHEN t.[name] = 'decimal' THEN t.[name] + N'(' + CAST(c.[precision] as nvarchar) + N',' + CAST(c.[scale] as nvarchar) + N')'
+			ELSE t.[name] + N'(' + ISNULL(CAST(c.max_length as nvarchar),'') + N')'
+		END AS data_type
+	,	IIF(c.is_nullable = 1, 'NULL', 'NOT NULL') AS nullable
+	,	IIF(c.is_identity = 1, 'IDENTITY', '') AS [identity]
+from sys.all_columns AS c
+inner join sys.types AS t
 	on t.user_type_id = c.user_type_id
-inner join sys.objects as o
+inner join sys.objects AS o
 	on o.object_id = c.object_id
-inner join sys.schemas as s
+inner join sys.schemas AS s
 	on s.schema_id = o.schema_id
-where c.[name] ='name'
+where c.[name] ='contract_number'
 ;
 
 --поиск по индексам
