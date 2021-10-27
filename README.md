@@ -38,6 +38,7 @@
 * test.RUN
 * [types_of_joins](./EDUCATION/types_of_joins.sql) - пример видов соединений (join)
 * [work_and_or](./EDUCATION/work_and_or.sql) - интересный пример на обработку AND и OR
+* [float_exponent.sql](./EDUCATION/float_exponent.sql) - пример работы с типом данных float и обработка экспоненты. Сравнение с decimal в части знаков после запятой.
 
 
 ### [other](./other/)
