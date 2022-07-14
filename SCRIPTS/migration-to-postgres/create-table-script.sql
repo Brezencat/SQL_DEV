@@ -85,3 +85,34 @@ SELECT	TABLE_NAME
 FROM CTE2
 GROUP BY TABLE_NAME
 ;
+
+
+--наработка для вывода ключей
+-- select	o.[name] AS TABLE_NAME
+-- 	,	c.[name] as COLUMN_NAME
+-- 	,	t.[name] + 
+-- 		CASE 
+--             WHEN c.max_length = -1 THEN '(MAX)' 
+--             WHEN t.[name] in ('nvarchar', 'nchar') THEN '(' + ISNULL(CAST(c.max_length / 2 as nvarchar),'') + ')'
+--             WHEN t.[name] in ('bigint', 'int', 'smallint', 'tinyint', 'bit', 'uniqueidentifier', 'datetime') THEN ''
+--             WHEN t.[name] = 'decimal' THEN '(' + CAST(c.precision as nvarchar(3)) + ',' + CAST(c.scale as nvarchar(3)) + ')'
+--             ELSE ISNULL('(' + CAST(c.max_length as nvarchar) + ')','') 
+-- 		END AS DATA_TYPE
+-- 	,	IIF(c.is_nullable = 0, 'not null', 'null') AS NULLABLE
+-- 	,	ix.*
+-- from sys.objects AS o
+-- INNER JOIN sys.all_columns AS c
+-- 	ON c.object_id = o.object_id
+-- INNER JOIN sys.types AS t
+-- 	ON t.user_type_id = c.user_type_id
+-- LEFT JOIN (
+-- 			SELECT ic.* 
+-- 			FROM sys.indexes AS i
+-- 			INNER JOIN sys.index_columns AS ic
+-- 				ON ic.object_id = i.object_id
+-- 				AND ic.index_id = i.index_id
+-- 			--WHERE i.object_id = OBJECT_ID('exchange_rate_1c')
+-- ) AS ix
+-- 	ON ix.object_id = o.object_id
+-- 	AND ix.column_id = c.column_id
+-- WHERE o.[name] ='exchange_rate_1c'
