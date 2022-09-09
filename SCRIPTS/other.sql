@@ -15,3 +15,12 @@ OPTION (OPTIMIZE FOR UNKNOWN);
 EXEC dbo.sp_help_jobhistory
 ;
 
+
+--запуск запроса от имени другого пользователя в MS SQL Server
+SELECT SUSER_NAME(), USER_NAME(); 
+
+EXECUTE AS LOGIN = '<user_name>';
+
+SELECT SUSER_NAME(), USER_NAME(); 
+
+REVERT;
