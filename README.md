@@ -41,6 +41,9 @@
 * [float_exponent.sql](./EDUCATION/float_exponent.sql) - пример работы с типом данных float и обработка экспоненты. Сравнение с decimal в части знаков после запятой.
 
 
+### [postgresql](/postgresql/)
+- [notes.sql](./postgresql/notes.sql) - мои заметки при работе с PostgreSQL
+
 ### [other](./other/)
 - [Hacking_FBI](./Hacking_FBI.sql) - FUNNY скрипт взлома ФБР
 
