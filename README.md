@@ -44,6 +44,7 @@
 ### [postgresql](/postgresql/)
 - [notes.sql](./postgresql/notes.sql) - мои заметки при работе с PostgreSQL
 - [storage-rows.sql](./postgresql/storage-rows.sql) - как Postgres хранит строки
+- [text-vs-varchar-toast.sql](./postgresql/text-vs-varchar-toast.sql) - Тест типов данных text и varchar(n) с указанной точностью и откуда тут взялся TOAST со своим влиянием
 
 ### [other](./other/)
 - [Hacking_FBI](./Hacking_FBI.sql) - FUNNY скрипт взлома ФБР
