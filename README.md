@@ -43,6 +43,7 @@
 
 ### [postgresql](/postgresql/)
 - [notes.sql](./postgresql/notes.sql) - мои заметки при работе с PostgreSQL
+- [storage-rows.sql](./postgresql/storage-rows.sql) - как Postgres хранит строки
 
 ### [other](./other/)
 - [Hacking_FBI](./Hacking_FBI.sql) - FUNNY скрипт взлома ФБР
