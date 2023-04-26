@@ -43,7 +43,7 @@
 
 ### [postgresql](/postgresql/)
 - [notes.sql](./postgresql/notes.sql) - мои заметки при работе с PostgreSQL
-- [storage-rows.sql](./postgresql/storage-rows.sql) - как Postgres хранит строки
+- [storage-rows.sql](./postgresql/storage-rows.sql) - как Postgres хранит строки в таблице куче. Мои эксперименты и описание со сслыками на документацию и статью, по чьим мотивам я решил пройтись самостоятельно
 - [text-vs-varchar-toast.sql](./postgresql/text-vs-varchar-toast.sql) - Тест типов данных text и varchar(n) с указанной точностью и откуда тут взялся TOAST со своим влиянием
 
 ### [other](./other/)
