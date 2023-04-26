@@ -25,6 +25,7 @@
 * [решение т.з. РТС-Трейдинг](./EDUCATION/решение%20т.з.%20РТС-Трейдинг.sql) - тестовое задание и его решение по SQL после прохождения собеседования в РТС-Трейдинг
 * [тестовое задание SQL РТС-Трейдинг](./EDUCATION/тестовое%20задание%20SQL%20РТС-Трейдинг.sql) - само тестовое задание
 * [Cbk_trans_arn](./EDUCATION/Cbk_trans_arn.sql) - формирование отчёта по чарджбекам на основании идентификаторов оригинальных транзакций (Oraccle).
+* [count_groups.sql](./EDUCATION/count_groups.sql) - пример работы группировки на примере агрегатной функции count()
 * [cross_apply](./EDUCATION/cross_apply.sql) - пример использования CROSS_APPLY и разница с JOIN
 * [CTE рекурсия](./EDUCATION/CTE%20рекурсия.sql) - примеры рекурсивного запроса CTE
 * EVENT SESSION SQL_batch_statement_by_TSQL2012
@@ -35,8 +36,15 @@
 * OVER and PIVOT
 * rally.DAKAR
 * test.RUN
+* [types_of_joins](./EDUCATION/types_of_joins.sql) - пример видов соединений (join)
 * [work_and_or](./EDUCATION/work_and_or.sql) - интересный пример на обработку AND и OR
+* [float_exponent.sql](./EDUCATION/float_exponent.sql) - пример работы с типом данных float и обработка экспоненты. Сравнение с decimal в части знаков после запятой.
 
+
+### [postgresql](/postgresql/)
+- [notes.sql](./postgresql/notes.sql) - мои заметки при работе с PostgreSQL
+- [storage-rows.sql](./postgresql/storage-rows.sql) - как Postgres хранит строки в таблице куче. Мои эксперименты и описание со сслыками на документацию и статью, по чьим мотивам я решил пройтись самостоятельно
+- [text-vs-varchar-toast.sql](./postgresql/text-vs-varchar-toast.sql) - Тест типов данных text и varchar(n) с указанной точностью и откуда тут взялся TOAST со своим влиянием
 
 ### [other](./other/)
 - [Hacking_FBI](./Hacking_FBI.sql) - FUNNY скрипт взлома ФБР

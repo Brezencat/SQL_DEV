@@ -89,3 +89,66 @@ USE master --удаляем базу
 GO
 --ALTER DATABASE TEST_EXISTS_NOT_EXISTS SET SINGLE_USER;
 DROP DATABASE TEST_EXISTS_NOT_EXISTS;
+GO
+
+
+
+--=======================================================
+--доп.примеры
+--есть описание в .md --!сделать это описание
+--=======================================================
+
+--create temp teble for test
+
+DROP TABLE IF EXISTS #PHONE;
+
+	CREATE TABLE #PHONE
+		(id_name int
+		,phone varchar(25)
+		);
+
+DROP TABLE IF EXISTS #NAME;
+
+	CREATE TABLE #NAME
+		(id_name int
+		,name varchar(128)
+		);
+
+--fill in temp tables for test
+
+INSERT INTO #PHONE
+	(id_name, phone)
+VALUES (1, 'xxx-xxx-xx-xx')
+	,	(2, 'eee-eee-ee-ee')
+	,	(3, '');
+
+INSERT INTO #NAME
+	(id_name, name)
+VALUES (1, 'AAA')
+	,	(2, 'BBBB')
+	,	(3, 'CCCCC');
+
+
+
+select p.*
+from #PHONE as p
+where NOT EXISTS (	select n.*
+				from #NAME as n
+				where n.name = 'AAA'
+					and n.id_name = p.id_name)
+;
+
+select p.*
+from #PHONE as p
+inner join #NAME as n
+	on n.id_name = p.id_name
+	and n.name <> 'AAA';
+;
+
+select p.*
+from #PHONE as p
+left join #NAME as n
+	on n.id_name = p.id_name
+	and n.name = 'AAA'
+where n.id_name is null
+;
